@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WhatsApp QR and Link Generator</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body class="bg-slate-900 text-white min-h-screen flex flex-col items-center justify-center p-4">
+
+  <div class="bg-slate-800 p-6 rounded-2xl shadow-2xl w-full max-w-md border border-slate-700">
+    <h1 class="text-2xl font-bold text-center text-green-400 mb-1">WhatsApp QR Generator</h1>
+    <p class="text-xs text-gray-400 text-center mb-6">Create instant QR code and link for your WhatsApp</p>
+
+    <div class="space-y-4">
+      <div>
+        <label class="block text-xs uppercase tracking-wider font-semibold mb-1 text-gray-300">WhatsApp Number</label>
+        <input type="number" id="phone" placeholder="919876543210" class="w-full p-3 rounded-lg bg-slate-700 border border-slate-600 focus:outline-none focus:border-green-400 text-white text-sm">
+      </div>
+
+      <div>
+        <label class="block text-xs uppercase tracking-wider font-semibold mb-1 text-gray-300">Message</label>
+        <textarea id="message" placeholder="Type your custom greeting message here..." class="w-full p-3 rounded-lg bg-slate-700 border border-slate-600 focus:outline-none focus:border-green-400 text-white text-sm h-20"></textarea>
+      </div>
+
+      <button onclick="generateQR()" class="w-full bg-green-500 hover:bg-green-600 text-slate-950 font-bold py-3 rounded-lg transition duration-200 text-sm tracking-wide">
+        GENERATE QR CODE
+      </button>
+    </div>
+
+    <!-- Output Result Section -->
+    <div id="result" class="mt-6 flex flex-col items-center hidden border-t border-slate-700 pt-5">
+      <p class="text-xs text-gray-400 mb-3 uppercase tracking-wider font-semibold">Your QR Code Is Ready</p>
+      
+      <div id="qrcode" class="p-3 bg-white rounded-xl shadow-lg border border-slate-200"></div>
+      
+      <div class="flex gap-2 mt-5 w-full">
+        <button onclick="downloadQR()" class="flex-1 bg-slate-700 hover:bg-slate-600 text-xs text-white py-2.5 px-3 rounded-lg border border-slate-500 font-semibold transition text-center">
+          Download Image
+        </button>
+        <button id="copyBtn" onclick="copyLink()" class="flex-1 bg-slate-700 hover:bg-slate-600 text-xs text-white py-2.5 px-3 rounded-lg border border-slate-500 font-semibold transition text-center">
+          Copy Link
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let generatedUrl = "";
+
+    function generateQR() {
+      let phone = document.getElementById("phone").value.trim();
+      let message = document.getElementById("message").value.trim();
+      let qrContainer = document.getElementById("qrcode");
+      let resultDiv = document.getElementById("result");
+
+      if (!phone) {
+        alert("Please enter a valid WhatsApp number.");
+        return;
+      }
+
+      qrContainer.innerHTML = "";
+      let encodedMessage = encodeURIComponent(message);
+      generatedUrl = `https://wa.me/${phone}?text=${encodedMessage}`;
+
+      new QRCode(qrContainer, {
+        text: generatedUrl,
+        width: 180,
+        height: 180
+      });
+
+      resultDiv.classList.remove("hidden");
+    }
+
+    function copyLink() {
+      if(generatedUrl) {
+        navigator.clipboard.writeText(generatedUrl);
+        let btn = document.getElementById("copyBtn");
+        btn.innerText = "Copied!";
+        setTimeout(() => {
+          btn.innerText = "Copy Link";
+        }, 2000);
+      }
+    }
+
+    function downloadQR() {
+      let img = document.querySelector("#qrcode img");
+      if (img) {
+        let a = document.createElement("a");
+        a.href = img.src;
+        a.download = "whatsapp-qr.png";
+        a.click();
+      }
+    }
+  </script>
+</body>
+</html>
