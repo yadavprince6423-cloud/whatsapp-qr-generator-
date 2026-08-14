@@ -1,98 +1,249 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WhatsApp QR and Link Generator</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <title>Pro WhatsApp QR Generator</title>
+  
+  <!-- Libraries for Custom QR & PDF Download -->
+  <script type="text/javascript" src="https://unpkg.com/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #0f172a;
+      color: #ffffff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .container {
+      background-color: #1e293b;
+      padding: 25px;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+      text-align: center;
+    }
+
+    h2 {
+      margin-bottom: 20px;
+      color: #22c55e;
+    }
+
+    .input-group, .custom-section {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      text-align: left;
+      margin-bottom: 15px;
+    }
+
+    label {
+      font-size: 14px;
+      color: #94a3b8;
+    }
+
+    input[type="text"], input[type="file"] {
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #334155;
+      background-color: #0f172a;
+      color: white;
+    }
+
+    .color-picker {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    input[type="color"] {
+      border: none;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      cursor: pointer;
+      background: transparent;
+    }
+
+    button {
+      background-color: #22c55e;
+      color: white;
+      border: none;
+      padding: 12px;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 10px;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background-color: #16a34a;
+    }
+
+    #qr-container {
+      margin-top: 20px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .download-options {
+      margin-top: 15px;
+      display: flex;
+      gap: 8px;
+    }
+
+    .download-options button {
+      font-size: 12px;
+      padding: 8px;
+      background-color: #3b82f6;
+    }
+
+    .download-options button:hover {
+      background-color: #2563eb;
+    }
+  </style>
 </head>
-<body class="bg-slate-900 text-white min-h-screen flex flex-col items-center justify-center p-4">
+<body>
 
-  <div class="bg-slate-800 p-6 rounded-2xl shadow-2xl w-full max-w-md border border-slate-700">
-    <h1 class="text-2xl font-bold text-center text-green-400 mb-1">WhatsApp QR Generator</h1>
-    <p class="text-xs text-gray-400 text-center mb-6">Create instant QR code and link for your WhatsApp</p>
+  <div class="container">
+    <h2>WhatsApp QR Generator Pro</h2>
 
-    <div class="space-y-4">
-      <div>
-        <label class="block text-xs uppercase tracking-wider font-semibold mb-1 text-gray-300">WhatsApp Number</label>
-        <input type="number" id="phone" placeholder="919876543210" class="w-full p-3 rounded-lg bg-slate-700 border border-slate-600 focus:outline-none focus:border-green-400 text-white text-sm">
-      </div>
+    <!-- Input Section -->
+    <div class="input-group">
+      <label>Phone Number (with Country Code):</label>
+      <input type="text" id="phone" placeholder="e.g. 919876543210">
 
-      <div>
-        <label class="block text-xs uppercase tracking-wider font-semibold mb-1 text-gray-300">Message</label>
-        <textarea id="message" placeholder="Type your custom greeting message here..." class="w-full p-3 rounded-lg bg-slate-700 border border-slate-600 focus:outline-none focus:border-green-400 text-white text-sm h-20"></textarea>
-      </div>
-
-      <button onclick="generateQR()" class="w-full bg-green-500 hover:bg-green-600 text-slate-950 font-bold py-3 rounded-lg transition duration-200 text-sm tracking-wide">
-        GENERATE QR CODE
-      </button>
+      <label>Preset Message (Optional):</label>
+      <input type="text" id="message" placeholder="e.g. Hi, I want to order!">
     </div>
 
-    <!-- Output Result Section -->
-    <div id="result" class="mt-6 flex flex-col items-center hidden border-t border-slate-700 pt-5">
-      <p class="text-xs text-gray-400 mb-3 uppercase tracking-wider font-semibold">Your QR Code Is Ready</p>
+    <!-- Customization Options -->
+    <div class="custom-section">
+      <h3>Design Customization</h3>
       
-      <div id="qrcode" class="p-3 bg-white rounded-xl shadow-lg border border-slate-200"></div>
-      
-      <div class="flex gap-2 mt-5 w-full">
-        <button onclick="downloadQR()" class="flex-1 bg-slate-700 hover:bg-slate-600 text-xs text-white py-2.5 px-3 rounded-lg border border-slate-500 font-semibold transition text-center">
-          Download Image
-        </button>
-        <button id="copyBtn" onclick="copyLink()" class="flex-1 bg-slate-700 hover:bg-slate-600 text-xs text-white py-2.5 px-3 rounded-lg border border-slate-500 font-semibold transition text-center">
-          Copy Link
-        </button>
+      <div class="color-picker">
+        <label for="qrColor">QR Dots Color:</label>
+        <input type="color" id="qrColor" value="#000000">
       </div>
+
+      <div class="color-picker">
+        <label for="bgColor">Background Color:</label>
+        <input type="color" id="bgColor" value="#ffffff">
+      </div>
+
+      <div class="logo-picker">
+        <label for="logoInput">Upload Center Logo:</label>
+        <input type="file" id="logoInput" accept="image/*">
+      </div>
+    </div>
+
+    <button id="generateBtn">Generate QR Code</button>
+
+    <!-- QR Output Container -->
+    <div id="qr-container">
+      <div id="qr-canvas"></div>
+    </div>
+
+    <!-- Download Buttons -->
+    <div class="download-options" id="downloadSection" style="display: none;">
+      <button id="downloadPng">Download PNG</button>
+      <button id="downloadPdf">Download PDF</button>
+      <button id="downloadSvg">Download SVG</button>
     </div>
   </div>
 
   <script>
-    let generatedUrl = "";
+    let uploadedLogo = null;
 
-    function generateQR() {
-      let phone = document.getElementById("phone").value.trim();
-      let message = document.getElementById("message").value.trim();
-      let qrContainer = document.getElementById("qrcode");
-      let resultDiv = document.getElementById("result");
+    // Initialize QR Code Styling Instance
+    const qrCode = new QRCodeStyling({
+      width: 250,
+      height: 250,
+      type: "canvas",
+      data: "https://wa.me/",
+      dotsOptions: { color: "#000000", type: "rounded" },
+      backgroundOptions: { color: "#ffffff" },
+      imageOptions: { crossOrigin: "anonymous", margin: 5, imageSize: 0.3 }
+    });
+
+    // Render empty QR container initially
+    qrCode.append(document.getElementById("qr-canvas"));
+
+    // Logo Upload Event
+    document.getElementById("logoInput").addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          uploadedLogo = reader.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    // Generate Button Click
+    document.getElementById("generateBtn").addEventListener("click", () => {
+      const phone = document.getElementById("phone").value.trim();
+      const message = document.getElementById("message").value.trim();
+      const dotColor = document.getElementById("qrColor").value;
+      const bgColor = document.getElementById("bgColor").value;
 
       if (!phone) {
-        alert("Please enter a valid WhatsApp number.");
+        alert("Please enter a valid phone number!");
         return;
       }
 
-      qrContainer.innerHTML = "";
-      let encodedMessage = encodeURIComponent(message);
-      generatedUrl = `https://wa.me/${phone}?text=${encodedMessage}`;
+      // Construct WhatsApp Link
+      let waUrl = `https://wa.me/${phone}`;
+      if (message) {
+        waUrl += `?text=${encodeURIComponent(message)}`;
+      }
 
-      new QRCode(qrContainer, {
-        text: generatedUrl,
-        width: 180,
-        height: 180
+      // Update QR Options
+      qrCode.update({
+        data: waUrl,
+        dotsOptions: { color: dotColor },
+        backgroundOptions: { color: bgColor },
+        image: uploadedLogo ? uploadedLogo : ""
       });
 
-      resultDiv.classList.remove("hidden");
-    }
+      // Show Download Buttons
+      document.getElementById("downloadSection").style.display = "flex";
+    });
 
-    function copyLink() {
-      if(generatedUrl) {
-        navigator.clipboard.writeText(generatedUrl);
-        let btn = document.getElementById("copyBtn");
-        btn.innerText = "Copied!";
-        setTimeout(() => {
-          btn.innerText = "Copy Link";
-        }, 2000);
-      }
-    }
+    // Download Handlers
+    document.getElementById("downloadPng").addEventListener("click", () => {
+      qrCode.download({ name: "whatsapp-qr", extension: "png" });
+    });
 
-    function downloadQR() {
-      let img = document.querySelector("#qrcode img");
-      if (img) {
-        let a = document.createElement("a");
-        a.href = img.src;
-        a.download = "whatsapp-qr.png";
-        a.click();
-      }
-    }
+    document.getElementById("downloadSvg").addEventListener("click", () => {
+      qrCode.download({ name: "whatsapp-qr", extension: "svg" });
+    });
+
+    document.getElementById("downloadPdf").addEventListener("click", () => {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      qrCode.getRawData("png").then((blob) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(blob);
+        reader.onloadend = () => {
+          doc.text("Scan QR Code to Chat on WhatsApp", 20, 20);
+          doc.addImage(reader.result, "PNG", 50, 40, 110, 110);
+          doc.save("whatsapp-qr.pdf");
+        };
+      });
+    });
   </script>
 </body>
 </html>
